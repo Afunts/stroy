@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Калькулятор стройматериалов | ТерраСклад Пятигорск</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="overlay"></div>
+      <div class="container hero-content">
+        <nav class="top-nav reveal">
+          <div class="brand">ТерраСклад «Южный Камень»</div>
+          <div class="nav-links">
+            <a href="#calculator">Калькулятор</a>
+            <a href="#advantages">Преимущества</a>
+            <a href="#contacts">Контакты</a>
+          </div>
+        </nav>
+        <p class="label">г. Пятигорск</p>
+        <h1 class="reveal">Расчет стройматериалов для вашего объекта</h1>
+        <p class="subtitle">
+          Профессиональный онлайн-калькулятор для проектирования и возведения
+          домов, складов и коммерческих объектов с учетом строительного запаса.
+        </p>
+        <a class="cta-link reveal" href="#calculator">Начать расчет</a>
+      </div>
+    </header>
+
+    <div class="page-sides" aria-hidden="true"></div>
+
+    <main id="calculator" class="container app-grid">
+      <section class="card reveal">
+        <h2>Параметры объекта</h2>
+        <form id="calcForm">
+          <label>
+            Название объекта
+            <input type="text" id="projectName" placeholder="Например: Дом на ул. Ермолова" />
+            <span class="field-tip">Нужно для сохранения расчета.</span>
+          </label>
+
+          <div class="grid-2">
+            <label>
+              Длина здания, м
+              <input type="number" id="length" min="1" max="300" step="0.1" value="12" required />
+              <span class="field-tip">Рекомендуемый диапазон: 1-300 м.</span>
+            </label>
+            <label>
+              Ширина здания, м
+              <input type="number" id="width" min="1" max="200" step="0.1" value="8" required />
+              <span class="field-tip">Рекомендуемый диапазон: 1-200 м.</span>
+            </label>
+          </div>
+
+          <div class="grid-2">
+            <label>
+              Высота стен, м
+              <input type="number" id="height" min="2" max="30" step="0.1" value="3" required />
+              <span class="field-tip">Обычно от 2 до 30 м.</span>
+            </label>
+            <label>
+              Толщина наружной стены, м
+              <input type="number" id="wallThickness" min="0.1" max="1" step="0.01" value="0.3" required />
+              <span class="field-tip">Например: 0.2, 0.3, 0.4 м.</span>
+            </label>
+          </div>
+
+          <div class="grid-2">
+            <label>
+              Процент окон/дверей в стенах, %
+              <input type="number" id="openings" min="0" max="60" step="1" value="18" required />
+              <span class="field-tip">Допустимо от 0 до 60%.</span>
+            </label>
+            <label>
+              Запас материалов, %
+              <input type="number" id="reserve" min="0" max="30" step="1" value="10" required />
+              <span class="field-tip">Обычно закладывают 5-15%.</span>
+            </label>
+          </div>
+
+          <div class="grid-2">
+            <label>
+              Тип стенового материала
+              <select id="wallMaterial">
+                <option value="brick">Кирпич керамический</option>
+                <option value="block">Газоблок</option>
+              </select>
+              <span class="field-tip">Выберите материал наружных стен (кирпич или газоблок).</span>
+            </label>
+            <label>
+              Толщина фундаментной плиты, м
+              <input type="number" id="slabThickness" min="0.1" max="1.2" step="0.01" value="0.25" required />
+              <span class="field-tip">Часто применяют 0.2-0.35 м.</span>
+            </label>
+          </div>
+
+          <div id="formError" class="form-error muted" role="alert" aria-live="polite"></div>
+          <button type="submit">Рассчитать потребность</button>
+        </form>
+      </section>
+
+      <section class="card reveal">
+        <h2>Результат расчета</h2>
+        <div id="summary" class="summary muted">
+          Заполните параметры и нажмите «Рассчитать потребность».
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Материал</th>
+                <th>Единица</th>
+                <th>Количество</th>
+                <th>Примечание</th>
+              </tr>
+            </thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </div>
+        <div class="result-actions">
+          <button type="button" id="exportPdf" class="secondary-action" disabled>Сохранить в PDF</button>
+          <button type="button" id="exportExcel" class="secondary-action" disabled>Сохранить в Excel</button>
+        </div>
+        <p class="muted action-note">Кнопки становятся активны после расчета.</p>
+      </section>
+    </main>
+
+    <section id="prices" class="container price-card reveal">
+      <h2>Цены и наличие (ориентировочно)</h2>
+      <p class="muted">Актуальность и наличие уточняйте у менеджера в день заказа.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Материал</th>
+              <th>Ориентир цены</th>
+              <th>Наличие на складе</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Кирпич керамический</td>
+              <td>от 24 ₽ / шт.</td>
+              <td>В наличии</td>
+            </tr>
+            <tr>
+              <td>Газоблок D500</td>
+              <td>от 6 800 ₽ / м³</td>
+              <td>Под заказ 1-2 дня</td>
+            </tr>
+            <tr>
+              <td>Арматура A500C</td>
+              <td>от 62 000 ₽ / т</td>
+              <td>В наличии</td>
+            </tr>
+            <tr>
+              <td>Бетон B25</td>
+              <td>от 6 400 ₽ / м³</td>
+              <td>Отгрузка по графику</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="advantages" class="container features-section">
+      <header class="features-head reveal">
+        <p class="label features-kicker">Почему мы</p>
+        <h2 class="features-title">Наши преимущества</h2>
+        <p class="features-sub muted">
+          Скорость расчёта, точность сметы и поддержка со склада в Пятигорске — в одном сервисе.
+        </p>
+      </header>
+      <div class="features">
+      <article class="feature-card reveal">
+        <h3>Быстрый расчет</h3>
+        <p>
+          Получите предварительную ведомость материалов за несколько секунд по
+          ключевым параметрам вашего объекта.
+        </p>
+      </article>
+      <article class="feature-card reveal">
+        <h3>Запас и точность</h3>
+        <p>
+          Учитываем проемы, толщины конструкций и процент запаса для снижения
+          рисков нехватки материалов на площадке.
+        </p>
+      </article>
+      <article class="feature-card reveal">
+        <h3>Поддержка проекта</h3>
+        <p>
+          Наш склад в Пятигорске помогает оперативно закрывать потребности по
+          бетону, кладочным материалам, арматуре и кровле.
+        </p>
+      </article>
+      </div>
+    </section>
+
+    <footer id="contacts" class="footer">
+      <div class="container footer-grid">
+        <div>
+          <h3>Контакты склада</h3>
+          <p>ТерраСклад «Южный Камень»</p>
+          <p>г. Пятигорск, Промзона-2, ул. Складская, 14</p>
+        </div>
+        <div>
+          <h3>Режим работы</h3>
+          <p>Пн-Пт: 08:00-19:00</p>
+          <p>Сб: 09:00-16:00, Вс: выходной</p>
+        </div>
+        <div>
+          <h3>Отдел снабжения</h3>
+          <p>+7 (8793) 00-00-00</p>
+          <p>sales@terrasklad.ru</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
