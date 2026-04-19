@@ -28,8 +28,12 @@ a {
 }
 
 .container {
-  width: min(1100px, 92vw);
+  width: 100%;
+  max-width: 1100px;
   margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  box-sizing: border-box;
 }
 
 .hero {
@@ -130,6 +134,13 @@ h1 {
   gap: 18px;
   position: relative;
   z-index: 1;
+  min-width: 0;
+}
+
+/* Позволяет колонкам сетки сужаться под ширину экрана (иначе таблица/инпуты раздувают блок). */
+.app-grid > .card {
+  min-width: 0;
+  max-width: 100%;
 }
 
 main,
@@ -188,6 +199,9 @@ input,
 select {
   min-height: 42px;
   line-height: 1.2;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
 }
 
 select {
@@ -252,7 +266,11 @@ button:disabled {
 }
 
 .table-wrap {
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  min-width: 0;
+  max-width: 100%;
 }
 
 table {
@@ -266,6 +284,8 @@ td {
   border-bottom: 1px solid var(--border);
   text-align: left;
   padding: 10px 6px;
+  vertical-align: top;
+  overflow-wrap: anywhere;
 }
 
 th {
@@ -403,5 +423,31 @@ th {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
+  }
+
+  .card {
+    padding: 14px;
+  }
+
+  .app-grid table {
+    font-size: 0.82rem;
+  }
+
+  .app-grid th,
+  .app-grid td {
+    padding: 8px 5px;
+  }
+}
+
+@media (max-width: 420px) {
+  .container {
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+  }
+
+  .app-grid th,
+  .app-grid td {
+    padding: 7px 4px;
+    font-size: 0.78rem;
   }
 }

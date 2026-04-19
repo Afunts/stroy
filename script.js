@@ -6,6 +6,46 @@ const exportPdfButton = document.getElementById("exportPdf");
 const exportExcelButton = document.getElementById("exportExcel");
 let lastCalculation = null;
 
+/** Roboto TTF with Cyrillic (pdfmake mirror on cdnjs) — cached after first fetch */
+let robotoPdfFontBase64 = null;
+let robotoPdfFontPromise = null;
+
+function uint8ToBase64(bytes) {
+  const chunkSize = 4096;
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const slice = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+    binary += String.fromCharCode.apply(null, slice);
+  }
+  return btoa(binary);
+}
+
+function loadRobotoForPdf() {
+  if (robotoPdfFontBase64) {
+    return Promise.resolve(robotoPdfFontBase64);
+  }
+  if (!robotoPdfFontPromise) {
+    const url =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/fonts/Roboto/Roboto-Regular.ttf";
+    robotoPdfFontPromise = fetch(url)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("font http");
+        }
+        return res.arrayBuffer();
+      })
+      .then((buf) => {
+        robotoPdfFontBase64 = uint8ToBase64(new Uint8Array(buf));
+        return robotoPdfFontBase64;
+      })
+      .catch((err) => {
+        robotoPdfFontPromise = null;
+        throw err;
+      });
+  }
+  return robotoPdfFontPromise;
+}
+
 const materialConfig = {
   brick: {
     title: "Кирпич керамический",
@@ -177,7 +217,7 @@ function buildExportLines() {
   return [...header, ...body, "", "Актуальность цен и наличие уточняйте у менеджера в день заказа."];
 }
 
-function downloadPdf() {
+async function downloadPdf() {
   if (!lastCalculation) {
     return;
   }
@@ -187,18 +227,56 @@ function downloadPdf() {
     return;
   }
 
-  const doc = new pdfApi();
-  const lines = buildExportLines();
-  let y = 14;
-  lines.forEach((line) => {
-    if (y > 280) {
-      doc.addPage();
-      y = 14;
+  if (exportPdfButton) {
+    exportPdfButton.disabled = true;
+  }
+
+  try {
+    let fontBase64;
+    try {
+      fontBase64 = await loadRobotoForPdf();
+    } catch {
+      setFormError(
+        "Не удалось подготовить шрифт для PDF (нужен интернет). Попробуйте снова или сохраните в Excel.",
+        true
+      );
+      return;
     }
-    doc.text(line, 10, y, { maxWidth: 190 });
-    y += 8;
-  });
-  doc.save("raschet-materialov.pdf");
+
+    const doc = new pdfApi();
+    doc.addFileToVFS("Roboto-Regular.ttf", fontBase64);
+    doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
+    doc.setFont("Roboto", "normal");
+    doc.setFontSize(10);
+
+    const margin = 14;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const maxWidth = pageWidth - margin * 2;
+    const lineHeight = doc.getFontSize() * 1.38;
+
+    let y = margin;
+    const lines = buildExportLines();
+
+    lines.forEach((line) => {
+      const wrapped = doc.splitTextToSize(line, maxWidth);
+      wrapped.forEach((subLine) => {
+        if (y + lineHeight > pageHeight - margin) {
+          doc.addPage();
+          y = margin;
+        }
+        doc.text(subLine, margin, y);
+        y += lineHeight;
+      });
+      y += lineHeight * 0.35;
+    });
+
+    doc.save("raschet-materialov.pdf");
+  } finally {
+    if (exportPdfButton) {
+      exportPdfButton.disabled = !lastCalculation;
+    }
+  }
 }
 
 function downloadExcel() {
