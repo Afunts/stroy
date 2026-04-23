@@ -9,6 +9,30 @@ const roleBadge = document.getElementById("roleBadge");
 const clearDealsBtn = document.getElementById("clearDeals");
 const chartCanvas = document.getElementById("dealsChart");
 
+function setupRevealAnimations() {
+  const revealItems = document.querySelectorAll(".reveal");
+  if (!revealItems.length) return;
+
+  if (typeof IntersectionObserver === "undefined") {
+    revealItems.forEach((el) => el.classList.add("show"));
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("show");
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.12 }
+  );
+
+  revealItems.forEach((item) => observer.observe(item));
+}
+
 function canUseLocalStorage() {
   try {
     const key = "__ts_test__";
@@ -34,6 +58,9 @@ function readAuth() {
 }
 
 function requireAuth() {
+  if (!canUseLocalStorage()) {
+    return { login: "user", role: "staff" };
+  }
   const auth = readAuth();
   if (!auth) {
     window.location.href = "index.html";
@@ -42,47 +69,66 @@ function requireAuth() {
   return auth;
 }
 
-function buildDemoDeals() {
-  const now = Date.now();
-  const demo = [];
-  const customers = ["Заказчик 1", "Заказчик 2", "Заказчик 3"];
-  const materials = ["brick", "block", "brick", "block", "brick", "block"];
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
-  for (let i = 0; i < 9; i += 1) {
-    const customerName = customers[i % customers.length];
-    const wallMaterial = materials[i % materials.length];
-    const createdAt = new Date(now - (i % 6) * 24 * 60 * 60 * 1000 - i * 55 * 60 * 1000).toISOString();
-    const wallVolume = 18 + (i % 5) * 6 + (wallMaterial === "brick" ? 2 : 0);
-    const slabVolume = 22 + (i % 4) * 5;
-    demo.push({
-      id: `demo_${i}_${Math.random().toString(16).slice(2)}`,
+function pick(arr) {
+  return arr[randInt(0, arr.length - 1)];
+}
+
+function buildRandomDeals(count = 18) {
+  const now = Date.now();
+  const customers = ["Заказчик 1", "Заказчик 2", "Заказчик 3"];
+  const materials = ["brick", "block"];
+  const objects = ["Склад", "Дом", "Гараж", "Магазин", "Цех", "Офис"];
+
+  const deals = [];
+  for (let i = 0; i < count; i += 1) {
+    const customerName = pick(customers);
+    const wallMaterial = pick(materials);
+    const daysAgo = randInt(0, 13);
+    const minutesShift = randInt(0, 12 * 60);
+    const createdAt = new Date(now - daysAgo * 24 * 60 * 60 * 1000 - minutesShift * 60 * 1000).toISOString();
+
+    const length = randInt(8, 36);
+    const width = randInt(6, 24);
+    const height = randInt(3, 8);
+    const perimeter = 2 * (length + width);
+    const wallAreaNet = Math.round(perimeter * height * (0.78 + Math.random() * 0.18));
+    const wallVolume = Math.round((wallAreaNet * (wallMaterial === "brick" ? 0.3 : 0.25)) * 10) / 10;
+    const slabVolume = Math.round((length * width * (0.2 + Math.random() * 0.18)) * 10) / 10;
+
+    deals.push({
+      id: `rnd_${Date.now()}_${i}_${Math.random().toString(16).slice(2)}`,
       createdAt,
       customerName,
-      projectName: `Объект ${i + 1}`,
+      projectName: `${pick(objects)} №${randInt(1, 24)}`,
       wallMaterial,
-      perimeter: 40 + i * 2,
-      wallAreaNet: 120 + i * 6,
+      perimeter,
+      wallAreaNet,
       wallVolume,
       slabVolume,
       lines: []
     });
   }
 
-  return demo;
+  deals.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  return deals;
 }
 
 function readDeals() {
   if (!canUseLocalStorage()) {
-    return buildDemoDeals();
+    return buildRandomDeals(18);
   }
   try {
     const raw = localStorage.getItem(DEALS_STORAGE_KEY);
-    if (!raw) return buildDemoDeals();
+    if (!raw) return buildRandomDeals(18);
     const value = JSON.parse(raw);
     const list = Array.isArray(value) ? value : [];
-    return list.length ? list : buildDemoDeals();
+    return list.length ? list : buildRandomDeals(18);
   } catch {
-    return buildDemoDeals();
+    return buildRandomDeals(18);
   }
 }
 
@@ -273,5 +319,6 @@ if (clearDealsBtn) {
   clearDealsBtn.addEventListener("click", clearDeals);
 }
 
+setupRevealAnimations();
 init();
 
