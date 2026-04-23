@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Админка | Аналитика</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="overlay"></div>
+      <div class="container hero-content">
+        <nav class="top-nav reveal">
+          <div class="brand">ТерраСклад «Южный Камень»</div>
+          <div class="nav-links">
+            <a href="index.html#calculator">На сайт</a>
+            <span id="roleBadge" class="nav-admin">Панель</span>
+            <button id="logoutBtn" type="button" class="nav-account secondary-action">Выход</button>
+          </div>
+        </nav>
+        <p class="label">Админка</p>
+        <h1 class="reveal">Аналитика расчётов (демо)</h1>
+        <p class="subtitle">
+          Данные берутся из браузера (localStorage) и обновляются после каждого расчёта на главной.
+        </p>
+      </div>
+    </header>
+
+    <div class="page-sides" aria-hidden="true"></div>
+
+    <main class="container" style="position: relative; z-index: 1; padding-top: 22px; padding-bottom: 26px;">
+      <section class="card reveal">
+        <h2>Сводка</h2>
+        <div id="kpis" class="summary muted">Загрузка…</div>
+      </section>
+
+      <section class="card reveal" style="margin-top: 18px;">
+        <h2>График: расчёты по дням</h2>
+        <div class="table-wrap" style="padding-top: 8px;">
+          <canvas id="dealsChart" height="120" aria-label="График расчётов" role="img"></canvas>
+        </div>
+        <p class="muted" style="margin-bottom: 0;">Это демонстрационная аналитика на основе сохранённых расчётов.</p>
+      </section>
+
+      <section class="card reveal" style="margin-top: 18px;">
+        <h2>Последние расчёты</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Дата</th>
+                <th>Объект</th>
+                <th>Материал</th>
+                <th>Объём стен</th>
+                <th>Плита</th>
+              </tr>
+            </thead>
+            <tbody id="dealsBody"></tbody>
+          </table>
+        </div>
+        <div class="result-actions" style="margin-top: 14px;">
+          <button id="clearDeals" type="button" class="secondary-action">Очистить демо-данные</button>
+          <a class="cta-link" href="index.html#calculator" style="text-align: center;">Сделать новый расчёт</a>
+        </div>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="admin.js"></script>
+  </body>
+</html>

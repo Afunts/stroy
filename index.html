@@ -16,6 +16,8 @@
             <a href="#calculator">Калькулятор</a>
             <a href="#advantages">Преимущества</a>
             <a href="#contacts">Контакты</a>
+            <a id="adminLink" class="nav-admin hidden" href="admin.html">Админка</a>
+            <button id="accountBtn" type="button" class="nav-account secondary-action">Учётка</button>
           </div>
         </nav>
         <p class="label">г. Пятигорск</p>
@@ -218,6 +220,35 @@
         </div>
       </div>
     </footer>
+
+    <div id="authModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+      <div class="modal-backdrop" data-close="true"></div>
+      <div class="modal-card" role="document">
+        <div class="modal-head">
+          <h2 id="authTitle">Вход в учётку</h2>
+          <button type="button" class="modal-close secondary-action" data-close="true" aria-label="Закрыть">×</button>
+        </div>
+
+        <form id="authForm" class="modal-form">
+          <label>
+            Логин
+            <input id="authLogin" type="text" autocomplete="username" placeholder="admin или sotrudnik1" required />
+          </label>
+          <label>
+            Пароль
+            <input id="authPassword" type="password" autocomplete="current-password" placeholder="admin" required />
+          </label>
+          <div id="authError" class="form-error muted" role="alert" aria-live="polite"></div>
+          <div class="modal-actions">
+            <button type="submit">Войти</button>
+            <button type="button" class="secondary-action" data-close="true">Отмена</button>
+          </div>
+          <p class="muted modal-hint">
+            Демо-доступ: <strong>admin/admin</strong> или <strong>sotrudnik1/admin</strong>.
+          </p>
+        </form>
+      </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>

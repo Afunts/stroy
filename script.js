@@ -6,6 +6,17 @@ const exportPdfButton = document.getElementById("exportPdf");
 const exportExcelButton = document.getElementById("exportExcel");
 let lastCalculation = null;
 
+const AUTH_STORAGE_KEY = "ts_auth_v1";
+const DEALS_STORAGE_KEY = "ts_deals_v1";
+
+const accountBtn = document.getElementById("accountBtn");
+const adminLink = document.getElementById("adminLink");
+const authModal = document.getElementById("authModal");
+const authForm = document.getElementById("authForm");
+const authLogin = document.getElementById("authLogin");
+const authPassword = document.getElementById("authPassword");
+const authError = document.getElementById("authError");
+
 /** Roboto TTF with Cyrillic (pdfmake mirror on cdnjs) — cached after first fetch */
 let robotoPdfFontBase64 = null;
 let robotoPdfFontPromise = null;
@@ -348,6 +359,145 @@ function setupRevealAnimations() {
   revealItems.forEach((item) => observer.observe(item));
 }
 
+function readAuth() {
+  try {
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    if (!raw) return null;
+    const value = JSON.parse(raw);
+    if (!value || typeof value !== "object") return null;
+    if (!value.login || !value.role) return null;
+    return value;
+  } catch {
+    return null;
+  }
+}
+
+function writeAuth(value) {
+  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(value));
+}
+
+function clearAuth() {
+  localStorage.removeItem(AUTH_STORAGE_KEY);
+}
+
+function setAuthError(message = "", isError = false) {
+  if (!authError) return;
+  authError.textContent = message;
+  authError.classList.toggle("muted", !isError);
+  authError.classList.toggle("error-text", isError);
+}
+
+function isValidCredentials(login, password) {
+  if (login === "admin" && password === "admin") {
+    return { login, role: "admin" };
+  }
+  if (login === "sotrudnik1" && password === "admin") {
+    return { login, role: "staff" };
+  }
+  return null;
+}
+
+function setModalOpen(open) {
+  if (!authModal) return;
+  authModal.classList.toggle("hidden", !open);
+  if (open) {
+    setAuthError("");
+    setTimeout(() => authLogin && authLogin.focus(), 0);
+  }
+}
+
+function renderAuthUi() {
+  const auth = readAuth();
+  if (adminLink) {
+    adminLink.classList.toggle("hidden", !auth);
+    adminLink.textContent = auth?.role === "admin" ? "Админка" : "Панель";
+  }
+  if (accountBtn) {
+    accountBtn.textContent = auth ? `Выход (${auth.login})` : "Учётка";
+  }
+}
+
+function addDealFromCalculation(calculation) {
+  try {
+    const deal = {
+      id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
+      createdAt: new Date().toISOString(),
+      projectName: calculation.data.projectName || "Без названия",
+      wallMaterial: calculation.data.wallMaterial,
+      perimeter: round(calculation.result.perimeter),
+      wallAreaNet: round(calculation.result.wallAreaNet),
+      wallVolume: round(calculation.result.wallVolume),
+      slabVolume: round(calculation.result.slabVolume),
+      lines: calculation.result.rows.map((row) => {
+        const estimate = estimateCostForRow(row);
+        return {
+          name: row.name,
+          unit: row.unit,
+          qty: row.qty,
+          estimatedCost: estimate.cost
+        };
+      })
+    };
+
+    const existingRaw = localStorage.getItem(DEALS_STORAGE_KEY);
+    const existing = existingRaw ? JSON.parse(existingRaw) : [];
+    const list = Array.isArray(existing) ? existing : [];
+    list.unshift(deal);
+    localStorage.setItem(DEALS_STORAGE_KEY, JSON.stringify(list.slice(0, 120)));
+  } catch {
+    // ignore localStorage errors
+  }
+}
+
+function setupAuthUi() {
+  renderAuthUi();
+
+  if (accountBtn) {
+    accountBtn.addEventListener("click", () => {
+      const auth = readAuth();
+      if (auth) {
+        clearAuth();
+        renderAuthUi();
+        return;
+      }
+      setModalOpen(true);
+    });
+  }
+
+  if (authModal) {
+    authModal.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      if (target.dataset.close === "true") {
+        setModalOpen(false);
+      }
+    });
+  }
+
+  if (authForm) {
+    authForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const login = (authLogin?.value || "").trim();
+      const password = authPassword?.value || "";
+      const auth = isValidCredentials(login, password);
+      if (!auth) {
+        setAuthError("Неверный логин или пароль.", true);
+        return;
+      }
+      writeAuth(auth);
+      setModalOpen(false);
+      renderAuthUi();
+      window.location.href = "admin.html";
+    });
+  }
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && authModal && !authModal.classList.contains("hidden")) {
+      setModalOpen(false);
+    }
+  });
+}
+
 function calculate(data) {
   const perimeter = 2 * (data.length + data.width);
   const wallAreaGross = perimeter * data.height;
@@ -436,6 +586,7 @@ form.addEventListener("submit", (event) => {
   lastCalculation = { data, result };
   setActionButtonsState(true);
   setFormError("Параметры заполнены корректно. Можно сохранить расчет.");
+  addDealFromCalculation(lastCalculation);
 
   const projectText = data.projectName ? `Объект: ${data.projectName}. ` : "";
   summary.innerHTML = `
@@ -452,3 +603,4 @@ setupActionButtons();
 setupInputValidationHints();
 setActionButtonsState(false);
 setupRevealAnimations();
+setupAuthUi();
