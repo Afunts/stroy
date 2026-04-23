@@ -63,7 +63,7 @@ function requireAuth() {
   }
   const auth = readAuth();
   if (!auth) {
-    window.location.href = "index.html";
+    window.location.href = "./index.html";
     return null;
   }
   return auth;
@@ -311,7 +311,7 @@ function init() {
 if (logoutBtn) {
   logoutBtn.addEventListener("click", () => {
     localStorage.removeItem(AUTH_STORAGE_KEY);
-    window.location.href = "index.html";
+    window.location.href = "./index.html";
   });
 }
 

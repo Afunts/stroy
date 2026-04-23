@@ -39,7 +39,7 @@ a {
 .hero {
   position: relative;
   z-index: 2;
-  background-image: url("background/123.jfif");
+  background-image: url("./background/123.jfif");
   background-size: cover;
   background-position: center;
   color: #fff;

@@ -496,7 +496,7 @@ function setupAuthUi() {
       writeAuth(auth);
       setModalOpen(false);
       renderAuthUi();
-      window.location.href = "admin.html";
+      window.location.href = "./admin.html";
     });
   }
 
