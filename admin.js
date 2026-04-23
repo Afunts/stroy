@@ -9,6 +9,17 @@ const roleBadge = document.getElementById("roleBadge");
 const clearDealsBtn = document.getElementById("clearDeals");
 const chartCanvas = document.getElementById("dealsChart");
 
+function canUseLocalStorage() {
+  try {
+    const key = "__ts_test__";
+    localStorage.setItem(key, "1");
+    localStorage.removeItem(key);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function readAuth() {
   try {
     const raw = localStorage.getItem(AUTH_STORAGE_KEY);
@@ -31,25 +42,7 @@ function requireAuth() {
   return auth;
 }
 
-function readDeals() {
-  try {
-    const raw = localStorage.getItem(DEALS_STORAGE_KEY);
-    if (!raw) return [];
-    const value = JSON.parse(raw);
-    return Array.isArray(value) ? value : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeDeals(deals) {
-  localStorage.setItem(DEALS_STORAGE_KEY, JSON.stringify(deals));
-}
-
-function seedDemoDealsIfEmpty() {
-  const current = readDeals();
-  if (current.length > 0) return current;
-
+function buildDemoDeals() {
   const now = Date.now();
   const demo = [];
   const customers = ["Заказчик 1", "Заказчик 2", "Заказчик 3"];
@@ -75,8 +68,22 @@ function seedDemoDealsIfEmpty() {
     });
   }
 
-  writeDeals(demo);
   return demo;
+}
+
+function readDeals() {
+  if (!canUseLocalStorage()) {
+    return buildDemoDeals();
+  }
+  try {
+    const raw = localStorage.getItem(DEALS_STORAGE_KEY);
+    if (!raw) return buildDemoDeals();
+    const value = JSON.parse(raw);
+    const list = Array.isArray(value) ? value : [];
+    return list.length ? list : buildDemoDeals();
+  } catch {
+    return buildDemoDeals();
+  }
 }
 
 function formatDate(iso) {
@@ -232,7 +239,11 @@ function renderChart(deals) {
 }
 
 function clearDeals() {
-  localStorage.removeItem(DEALS_STORAGE_KEY);
+  try {
+    localStorage.removeItem(DEALS_STORAGE_KEY);
+  } catch {
+    // ignore
+  }
   init();
 }
 
@@ -244,7 +255,7 @@ function init() {
     roleBadge.textContent = auth.role === "admin" ? `Админ: ${auth.login}` : `Сотрудник: ${auth.login}`;
   }
 
-  const deals = seedDemoDealsIfEmpty();
+  const deals = readDeals();
   renderKpis(deals);
   renderDealsTable(deals);
   renderChart(deals);
