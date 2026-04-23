@@ -49,6 +49,7 @@
             <thead>
               <tr>
                 <th>Дата</th>
+                <th>Заказчик</th>
                 <th>Объект</th>
                 <th>Материал</th>
                 <th>Объём стен</th>
@@ -62,6 +63,30 @@
           <button id="clearDeals" type="button" class="secondary-action">Очистить демо-данные</button>
           <a class="cta-link" href="index.html#calculator" style="text-align: center;">Сделать новый расчёт</a>
         </div>
+      </section>
+
+      <section class="card reveal" style="margin-top: 18px;">
+        <h2>Подписки (расчёты + закупка у партнёров)</h2>
+        <p class="muted" style="margin-top: 0;">
+          Демо-модель подписки: заказчику назначается тариф на расчёты и доступ к закупке у партнёров.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Заказчик</th>
+                <th>Тариф</th>
+                <th>Лимит расчётов</th>
+                <th>Закупка у партнёров</th>
+                <th>Статус</th>
+              </tr>
+            </thead>
+            <tbody id="subsBody"></tbody>
+          </table>
+        </div>
+        <p class="muted" style="margin-bottom: 0;">
+          Партнёры (пример): «Южный Камень», «БетонПром», «МеталлСнаб».
+        </p>
       </section>
     </main>
 

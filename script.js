@@ -8,6 +8,7 @@ let lastCalculation = null;
 
 const AUTH_STORAGE_KEY = "ts_auth_v1";
 const DEALS_STORAGE_KEY = "ts_deals_v1";
+const CUSTOMER_COUNTER_KEY = "ts_customer_counter_v1";
 
 const accountBtn = document.getElementById("accountBtn");
 const adminLink = document.getElementById("adminLink");
@@ -419,10 +420,18 @@ function renderAuthUi() {
 
 function addDealFromCalculation(calculation) {
   try {
+    const counterRaw = localStorage.getItem(CUSTOMER_COUNTER_KEY);
+    const counter = counterRaw ? Number(counterRaw) : 0;
+    const nextCounter = Number.isFinite(counter) ? counter + 1 : 1;
+    localStorage.setItem(CUSTOMER_COUNTER_KEY, String(nextCounter));
+    const customerIndex = ((nextCounter - 1) % 3) + 1;
+    const customerName = `Заказчик ${customerIndex}`;
+
     const deal = {
       id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
       createdAt: new Date().toISOString(),
-      projectName: calculation.data.projectName || "Без названия",
+      customerName,
+      projectName: calculation.data.projectName || customerName,
       wallMaterial: calculation.data.wallMaterial,
       perimeter: round(calculation.result.perimeter),
       wallAreaNet: round(calculation.result.wallAreaNet),
