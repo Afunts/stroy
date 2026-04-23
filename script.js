@@ -331,15 +331,32 @@ function setupActionButtons() {
 function setupInputValidationHints() {
   const numberInputs = form.querySelectorAll("input[type='number']");
   numberInputs.forEach((input) => {
-    input.addEventListener("input", () => {
-      if (input.validity.valid) {
-        input.setCustomValidity("");
-      } else if (input.validity.rangeUnderflow || input.validity.rangeOverflow) {
+    const syncValidityMessage = () => {
+      // Всегда сбрасываем старое кастомное сообщение, иначе оно может "залипать".
+      input.setCustomValidity("");
+
+      // Если поле пустое, пусть браузер показывает стандартную подсказку required.
+      if (input.value === "") {
+        if (input === document.activeElement) {
+          input.reportValidity();
+        }
+        return;
+      }
+
+      if (input.validity.rangeUnderflow || input.validity.rangeOverflow) {
         input.setCustomValidity("Значение вне допустимого диапазона для этого поля.");
-      } else {
+      } else if (input.validity.badInput || input.validity.stepMismatch) {
         input.setCustomValidity("Введите корректное числовое значение.");
       }
-    });
+
+      if (input === document.activeElement) {
+        input.reportValidity();
+      }
+    };
+
+    input.addEventListener("input", syncValidityMessage);
+    input.addEventListener("change", syncValidityMessage);
+    input.addEventListener("blur", () => input.setCustomValidity(""));
   });
 }
 

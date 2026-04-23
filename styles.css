@@ -526,6 +526,11 @@ th {
   transform: translateY(0);
 }
 
+.admin-page .reveal {
+  opacity: 1;
+  transform: none;
+}
+
 @media (max-width: 940px) {
   .app-grid,
   .grid-2,
